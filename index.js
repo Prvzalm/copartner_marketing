@@ -5,6 +5,7 @@ const axios = require("axios");
 const cors = require("cors");
 const { StockBot } = require("./models/StockSchema");
 const { default: mongoose } = require("mongoose");
+const { MarketingBot } = require("./models/MarketingSchema");
 
 const PORT = "3304";
 
@@ -59,6 +60,13 @@ bot.on("chat_join_request", async (ctx) => {
   try {
     await ctx.telegram.approveChatJoinRequest(chatId, memberId);
     console.log(`Approved join request for user ${memberId}`);
+
+    await MarketingBot.findOneAndUpdate(
+      { chatId: chatId },
+      { $addToSet: { members: memberId } },
+      { upsert: true, new: true }
+    );
+    console.log(`Saved member ${memberId} in chat ${chatId}`);
   } catch (error) {
     console.error(
       `Failed to approve join request for user ${memberId}:`,
